@@ -1,0 +1,22 @@
+{
+  "template": "https://gitdma.risc-software.at/common/python-package-template",
+  "commit": "138de335fc8f278a12c77a72efea6ee2af7afc0a",
+  "checkout": "uv",
+  "context": {
+    "cookiecutter": {
+      "package_name": "mlops_zoomcamp",
+      "package_description": "Homework exercises for mlops zoomcamp",
+      "is_subproject": true,
+      "package_url": "https://github.com/evansdoe/mlops_zoomcamp",
+      "author_name": "Evans Doe Ocansey",
+      "author_email": "evans@aims.ac.za",
+      "python_version": "3.12",
+      "docstring_style": "Google",
+      "gpu_support": false,
+      "__package_name_kebab_case": "mlops-zoomcamp",
+      "__package_name_snake_case": "mlops_zoomcamp",
+      "_template": "https://gitdma.risc-software.at/common/python-package-template"
+    }
+  },
+  "directory": null
+}

@@ -1,0 +1,104 @@
+default:
+  tags: [ "openshift-cache" ]
+
+# includes from the global ci-templates repository
+include:
+  - project: 'common/ci-templates'
+    ref: main
+    file: '/devops/python/uv/test-pipeline.yml'
+  - project: 'common/ci-templates'
+    ref: main
+    file: '/devops/container/build.yml'
+
+# optional - override the default values, if specified
+variables:
+  REGISTRY_BASE_URL: ${CI_REGISTRY_IMAGE}/mlops_zoomcamp
+  # specify python working directory (e.g. for mixed repositories)
+  PYTHON_WORKING_DIRECTORY: "src/mlops-zoomcamp"
+  # define a specific python version. Will be replaced in a future version by configuring pyenv in pyproject.toml
+  PYTHON_VERSION: '3.12'
+  # most specific tag, to reference images for deployments
+  SPECIFIC_IMAGE_TAG: ${OPTIONAL_DEFAULT_BRANCH_PREFIX}${CI_PIPELINE_IID}_${CI_COMMIT_SHORT_SHA}
+  # branch specific tag, to build and reference (PYTHON_IMAGE) dev images for testing
+  BRANCH_IMAGE_TAG: ${CI_COMMIT_BRANCH}_latest
+  # latest tag, optionally attributed by default branch prefix
+  LATEST_TAG: ${OPTIONAL_DEFAULT_BRANCH_PREFIX}latest
+  # defined image for python testing - should be able to run all python stuff
+  PYTHON_IMAGE: ${REGISTRY_BASE_URL}/dev:${BRANCH_IMAGE_TAG}
+
+stages:
+  - provision
+  - sast
+  - test
+  - build
+  - publish
+
+build-image:
+  stage: provision
+  needs: []
+  rules:
+    - changes:
+      - $PYTHON_WORKING_DIRECTORY/uv.lock
+      - $PYTHON_WORKING_DIRECTORY/Dockerfile
+      - $PYTHON_WORKING_DIRECTORY/.dockerignore
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'   # Run on the default branch
+      variables:
+        OPTIONAL_DEFAULT_BRANCH_PREFIX: ${CI_DEFAULT_BRANCH}_
+    - if: '$CI_COMMIT_BRANCH == "dev"'                # Run on the dev branch
+    - when: manual
+  allow_failure: true
+  extends:
+    - .kaniko-build-image
+  variables:
+    IMAGE_NAME: ${REGISTRY_BASE_URL}/build
+    IMAGE_TAG: ${SPECIFIC_IMAGE_TAG}
+    DOCKERFILE: Dockerfile
+    WORKING_DIRECTORY: ${CI_PROJECT_DIR}/${PYTHON_WORKING_DIRECTORY}
+    KANIKO_ARGS: --reproducible --skip-unused-stages=true --build-arg PYTHON_VERSION=${PYTHON_VERSION} --target=build --destination ${IMAGE_NAME}:${LATEST_TAG}
+
+build-runtime-image:
+  stage: build
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'   # Run on the default branch
+      variables:
+        OPTIONAL_DEFAULT_BRANCH_PREFIX: ${CI_DEFAULT_BRANCH}_
+    - if: '$CI_COMMIT_BRANCH == "dev"'                # Run on the dev branch
+    - when: manual
+  allow_failure: true
+  extends:
+    - .kaniko-build-image
+  variables:
+    IMAGE_NAME: ${REGISTRY_BASE_URL}/runtime
+    IMAGE_TAG: ${SPECIFIC_IMAGE_TAG}
+    DOCKERFILE: Dockerfile
+    WORKING_DIRECTORY: ${CI_PROJECT_DIR}/${PYTHON_WORKING_DIRECTORY}
+    KANIKO_ARGS: --reproducible --skip-unused-stages=true --build-arg PYTHON_VERSION=${PYTHON_VERSION} --target=runtime --destination ${IMAGE_NAME}:${LATEST_TAG}
+
+build-dev-image:
+  stage: provision
+  needs: []
+  rules:
+    - if: '$CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH'   # Run on non default branches based on changes
+      changes:
+      - $PYTHON_WORKING_DIRECTORY/uv.lock
+      - $PYTHON_WORKING_DIRECTORY/pyproject.toml
+      - $PYTHON_WORKING_DIRECTORY/Dockerfile
+      - $PYTHON_WORKING_DIRECTORY/.dockerignore
+
+      # Run on non default branches on merge request pipelines, the first commit in pipelines for branches or tags, or when manually running a pipeline
+    - if: $CI_COMMIT_BRANCH != $CI_DEFAULT_BRANCH && $CI_COMMIT_BEFORE_SHA == "0000000000000000000000000000000000000000"
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'   # Run on the default branch adding a prefix
+      variables:
+        OPTIONAL_DEFAULT_BRANCH_PREFIX: ${CI_DEFAULT_BRANCH}_
+    - if: '$CI_COMMIT_BRANCH == "dev"'                # Run on the dev branch
+    - when: manual
+  allow_failure: true
+  extends:
+    - .kaniko-build-image
+  variables:
+    IMAGE_NAME: ${REGISTRY_BASE_URL}/dev
+    IMAGE_TAG: ${BRANCH_IMAGE_TAG}
+    DOCKERFILE: Dockerfile
+    WORKING_DIRECTORY: ${CI_PROJECT_DIR}/${PYTHON_WORKING_DIRECTORY}
+    KANIKO_ARGS: --reproducible --skip-unused-stages=true --build-arg PYTHON_VERSION=${PYTHON_VERSION} --target=dev --destination ${IMAGE_NAME}:${LATEST_TAG}
+

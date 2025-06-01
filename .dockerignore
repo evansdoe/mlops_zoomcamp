@@ -1,0 +1,12 @@
+# Ignore everything
+*
+
+# but
+!/pyproject.toml
+!/uv.lock
+!/README.md
+!/mlops_zoomcamp/**/*.py
+
+# but but
+# Ignore the unignored
+# /mlops_zoomcamp/super/specific.py
