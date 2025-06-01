@@ -11,7 +11,15 @@ authors = [{ name = "Evans Doe Ocansey", email = "evans@aims.ac.za" }]
 readme = "README.md"
 classifiers = ["Programming Language :: Python :: 3"]
 dependencies = [
+    "hydra-core>=1.3.2",
+    "jupyter>=1.1.1",
     # "torch>=2.5.1,<2.6.0"
+    "mlflow>=1.27.0",
+    "pandas>=2.2.3",
+    "pyarrow>=20.0.0",
+    "pydantic>=2.11.5",
+    "scikit-learn>=1.6.1",
+    "seaborn>=0.13.2",
 ]
 
 [project.urls]
