@@ -64,7 +64,7 @@ COPY --from=build $VENV_PATH $VENV_PATH
 # Copy the rest of the repository
 COPY . .
 
-CMD ["bash"]
+# CMD ["bash"]
 
 # ==============================================================================
 # Development Stage
@@ -75,7 +75,27 @@ ARG DEBIAN_FRONTEND
 
 RUN apt-get update && apt-get install -yq \
     git \
+    tmux \
+    zsh \
+    htop \
+    glances \
+    tree \
+    curl \
+    neovim \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # install development dependencies
 RUN uv sync --all-extras && uv cache prune --ci
+
+# Set timezone
+ARG TZ=Europe/Vienna
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+# Install tmux, vim and oh-my-zsh
+RUN set -ex \    
+    && cd \
+    && git clone https://github.com/gpakosz/.tmux.git \
+    && ln -s -f .tmux/.tmux.conf && cp .tmux/.tmux.conf.local . \
+    && curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash
+ENV SHELL=/bin/zsh
+CMD ["zsh"]
