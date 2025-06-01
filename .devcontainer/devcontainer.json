@@ -65,13 +65,13 @@
                 ]
             }
         }
-    }
+    },
 
     // Use 'forwardPorts' to make a list of ports inside the container available locally.
     // "forwardPorts": [],
 
     // Uncomment the next line to run commands after the container is created.
-    // "postCreateCommand": "cat /etc/os-release",
+    "postCreateCommand": "git config --global --add safe.directory /workspace/personal/mlops-zoomcamp"
 
     // Uncomment to connect as an existing user other than the container default. More info: https://aka.ms/dev-containers-non-root.
     // "remoteUser": "devcontainer"
