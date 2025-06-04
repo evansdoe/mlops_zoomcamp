@@ -11,6 +11,9 @@
         //     "autoPull": true,
         //     "version": "latest"
         // }
+        "ghcr.io/rocker-org/devcontainer-features/quarto-cli:1": {
+            "version": "latest"
+        }
     },
     "customizations": {
         "vscode": {
@@ -71,7 +74,7 @@
     // "forwardPorts": [],
 
     // Uncomment the next line to run commands after the container is created.
-    "postCreateCommand": "git config --global --add safe.directory /workspace/personal/mlops-zoomcamp"
+    "postCreateCommand": "echo \"alias poeprecommit='uv run poe precommit'\" >> ~/.bashrc && echo \"alias poecheck='uv run poe check'\" >> ~/.bashrc && echo \"alias poetest='uv run poe test'\" >> ~/.bashrc && echo \"alias poerun='uv run poe precommit; uv run poe check; uv run poe test;'\" >> ~/.bashrc && echo \"alias poeprecommit='uv run poe precommit'\" >> ~/.zshrc && echo \"alias poecheck='uv run poe check'\" >> ~/.zshrc && echo \"alias poetest='uv run poe test'\" >> ~/.zshrc && echo \"alias poerun='uv run poe precommit; uv run poe check; uv run poe test;'\" >> ~/.zshrc; git config --global --add safe.directory /workspace/personal/mlops-zoomcamp; cd /workspace/personal/mlops-zoomcamp;"
 
     // Uncomment to connect as an existing user other than the container default. More info: https://aka.ms/dev-containers-non-root.
     // "remoteUser": "devcontainer"
