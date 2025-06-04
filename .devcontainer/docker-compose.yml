@@ -26,14 +26,14 @@ services:
         PYTHON_VERSION: "3.12"
     
     # Uncomment for GPU support:
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: all
-    #           capabilities:
-    #             - gpu
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities:
+                - gpu
     
     volumes:
       # Mounts the project folder to '/workspace'.
